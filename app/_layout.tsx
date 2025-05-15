@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import React from 'react';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme } from '../hooks/useColorScheme';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
 
@@ -10,6 +10,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'CrimsonPro-Regular': require('../assets/fonts/CrimsonPro-Regular.ttf'),
+    'CrimsonPro-Bold': require('../assets/fonts/CrimsonPro-Bold.ttf'),
   });
 
   if (!loaded) {

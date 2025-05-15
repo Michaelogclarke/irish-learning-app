@@ -1,28 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
   Animated,
   Dimensions,
+  Platform,
+  SafeAreaView,
   StatusBar,
-  Platform
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { router } from 'expo-router';
-import { flashcards } from '../data/flashcards';
-// Import the Colors constant correctly
-import Colors from '../constants/Colors.js';
+import Colors from '../constants/Colors';
+import { flashcards, getCategories, getTypes } from '../data/flashcards';
 
 // Flashcard component
 const Flashcard = ({ card, isFlipped, onPress }) => {
   const flipAnimation = useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
-    Animated.timing(flipAnimation, {
+    Animated.spring(flipAnimation, {
       toValue: isFlipped ? 1 : 0,
-      duration: 300,
+      friction: 8,
+      tension: 10,
       useNativeDriver: true,
     }).start();
   }, [isFlipped]);
@@ -120,6 +121,71 @@ export default function FlashcardScreen() {
     totalAttempts: 0
   });
   const [filteredCards, setFilteredCards] = useState(flashcards);
+  const [selectedCategories, setSelectedCategories] = useState(getCategories());
+  const [selectedTypes, setSelectedTypes] = useState(getTypes());
+  
+  // Load scores from AsyncStorage on component mount
+  useEffect(() => {
+    const loadScores = async () => {
+      try {
+        const savedScores = await AsyncStorage.getItem('scores');
+        if (savedScores) {
+          setScores(JSON.parse(savedScores));
+        }
+      } catch (error) {
+        console.error('Error loading scores:', error);
+      }
+    };
+    
+    loadScores();
+  }, []);
+  
+  // Save scores to AsyncStorage whenever they change
+  useEffect(() => {
+    const saveScores = async () => {
+      try {
+        await AsyncStorage.setItem('scores', JSON.stringify(scores));
+      } catch (error) {
+        console.error('Error saving scores:', error);
+      }
+    };
+    
+    saveScores();
+  }, [scores]);
+  
+  // Load filters from AsyncStorage
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        const savedCategories = await AsyncStorage.getItem('selectedCategories');
+        const savedTypes = await AsyncStorage.getItem('selectedTypes');
+        
+        if (savedCategories) {
+          setSelectedCategories(JSON.parse(savedCategories));
+        }
+        
+        if (savedTypes) {
+          setSelectedTypes(JSON.parse(savedTypes));
+        }
+      } catch (error) {
+        console.error('Error loading filters:', error);
+      }
+    };
+    
+    loadFilters();
+  }, []);
+  
+  // Apply filters to flashcards
+  useEffect(() => {
+    const filtered = flashcards.filter(card => 
+      selectedCategories.includes(card.category) && 
+      selectedTypes.includes(card.type)
+    );
+    
+    setFilteredCards(filtered.length > 0 ? filtered : flashcards);
+    setCurrentIndex(0);
+    setIsFlipped(false);
+  }, [selectedCategories, selectedTypes]);
   
   // Function to handle card flip
   const handleFlip = () => {
@@ -141,21 +207,32 @@ export default function FlashcardScreen() {
     setScores(newScores);
     
     // Move to next card
-    setIsFlipped(false);
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % filteredCards.length);
+    goToNextCard();
   };
   
   // Function to handle incorrect answer
   const handleIncorrect = () => {
-    // Always update scores regardless of flip state
+    // Update scores
     const newScores = { ...scores };
-    newScores.currentStreak = 0;
+    newScores.currentStreak = 0; // Reset streak
     newScores.totalAttempts += 1;
     setScores(newScores);
     
     // Move to next card
+    goToNextCard();
+  };
+  
+  // Function to go to next card
+  const goToNextCard = () => {
+    // Reset flip state
     setIsFlipped(false);
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % filteredCards.length);
+    
+    // If we've reached the end of the cards, loop back to the beginning
+    if (currentIndex >= filteredCards.length - 1) {
+      setCurrentIndex(0);
+    } else {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
   
   // Function to go to filter screen
@@ -241,10 +318,10 @@ const cardWidth = Math.min(width - 40, 400);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#f9fafb', // Using direct color value instead of Colors.background
   },
   header: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#047857',
     paddingVertical: 16,
     paddingHorizontal: 20,
     flexDirection: 'row',
@@ -312,7 +389,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   streakCounter: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#047857',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -334,24 +411,24 @@ const styles = StyleSheet.create({
   },
   bestStreakLabel: {
     fontSize: 12,
-    color: Colors.textLight,
+    color: '#ffffff',
   },
   bestStreakValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#ffffff',
   },
   successContainer: {
     alignItems: 'center',
   },
   successLabel: {
     fontSize: 12,
-    color: Colors.textLight,
+    color: '#ffffff',
   },
   successValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: '#ffffff',
   },
   // Flashcard Styles
   flashcardContainer: {
@@ -403,28 +480,28 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   categoryText: {
-    color: Colors.primary,
+    color: '#047857',
     fontSize: 12,
     fontWeight: '600',
   },
   cardText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#047857',
     textAlign: 'center',
-    fontFamily: 'System',
+    fontFamily: 'CrimsonPro-Bold',
   },
   cardTextEnglish: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#047857',
     textAlign: 'center',
   },
   cardType: {
     position: 'absolute',
     bottom: 16,
     right: 16,
-    color: Colors.textLight,
+    color: '#ffffff',
     fontSize: 14,
     fontStyle: 'italic',
   },
@@ -446,7 +523,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   flipButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#047857',
     marginBottom: 12,
   },
   answerButtons: {
@@ -466,7 +543,7 @@ const styles = StyleSheet.create({
   controlButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.text,
+    color: '#ffffff',
   },
   // Progress Indicator
   progressContainer: {
@@ -475,10 +552,10 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 14,
-    color: Colors.textLight,
+    color: '#ffffff',
   },
   progressValue: {
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#ffffff',
   },
 });

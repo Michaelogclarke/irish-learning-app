@@ -10,14 +10,15 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../constants/Colors';
 import { getCategories, getTypes } from '../data/flashcards';
 
 export default function FilterScreen() {
-  const [categories, setCategories] = useState([]);
-  const [types, setTypes] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [types, setTypes] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectAllCategories, setSelectAllCategories] = useState(true);
   const [selectAllTypes, setSelectAllTypes] = useState(true);
 
@@ -29,9 +30,38 @@ export default function FilterScreen() {
     setCategories(allCategories);
     setTypes(allTypes);
     
-    // Initially select all categories and types
-    setSelectedCategories(allCategories);
-    setSelectedTypes(allTypes);
+    // Load saved filters from AsyncStorage
+    const loadSavedFilters = async () => {
+      try {
+        const savedCategories = await AsyncStorage.getItem('selectedCategories');
+        const savedTypes = await AsyncStorage.getItem('selectedTypes');
+        
+        if (savedCategories) {
+          const parsedCategories = JSON.parse(savedCategories);
+          setSelectedCategories(parsedCategories);
+          setSelectAllCategories(parsedCategories.length === allCategories.length);
+        } else {
+          // Initially select all categories if no saved preferences
+          setSelectedCategories(allCategories);
+        }
+        
+        if (savedTypes) {
+          const parsedTypes = JSON.parse(savedTypes);
+          setSelectedTypes(parsedTypes);
+          setSelectAllTypes(parsedTypes.length === allTypes.length);
+        } else {
+          // Initially select all types if no saved preferences
+          setSelectedTypes(allTypes);
+        }
+      } catch (error) {
+        console.error('Error loading saved filters:', error);
+        // Fall back to selecting all categories and types
+        setSelectedCategories(allCategories);
+        setSelectedTypes(allTypes);
+      }
+    };
+    
+    loadSavedFilters();
   }, []);
 
   // Toggle category selection
@@ -83,15 +113,24 @@ export default function FilterScreen() {
   };
 
   // Apply filters and return to flashcard screen
-  const applyFilters = () => {
-    // In a real app, you would pass these filters back to the flashcard screen
-    // For now, we'll just navigate back
-    router.back();
+  const applyFilters = async () => {
+    try {
+      // Save selected filters to AsyncStorage
+      await AsyncStorage.setItem('selectedCategories', JSON.stringify(selectedCategories));
+      await AsyncStorage.setItem('selectedTypes', JSON.stringify(selectedTypes));
+      
+      // Navigate back to the flashcard screen
+      router.back();
+    } catch (error) {
+      console.error('Error saving filters:', error);
+      // Navigate back even if there's an error
+      router.back();
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      <StatusBar barStyle="light-content" backgroundColor="#047857" />
       
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Filter Flashcards</Text>
@@ -159,7 +198,7 @@ export default function FilterScreen() {
                   value={selectedCategories.includes(category)}
                   onValueChange={() => toggleCategory(category)}
                   trackColor={{ false: '#e5e7eb', true: '#a7f3d0' }}
-                  thumbColor={selectedCategories.includes(category) ? Colors.primary : '#f3f4f6'}
+                  thumbColor={selectedCategories.includes(category) ? '#047857' : '#f3f4f6'}
                 />
               </View>
             ))}
@@ -189,10 +228,10 @@ export default function FilterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#f9fafb', // Using direct color value instead of Colors.background
   },
   header: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#047857', // Using direct color value instead of Colors.primary
     paddingVertical: 16,
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -231,7 +270,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#047857', // Primary color
     marginBottom: 16,
   },
   selectButtons: {
@@ -239,7 +278,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectButtonText: {
-    color: Colors.primary,
+    color: '#047857', // Primary color
     fontSize: 14,
   },
   selectButtonDivider: {
@@ -285,7 +324,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 16,
-    color: Colors.text,
+    color: '#1f2937', // Text color
   },
   footer: {
     padding: 16,
@@ -294,7 +333,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f3f4f6',
   },
   applyButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#047857', // Primary color
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -312,7 +351,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: Colors.textLight,
+    color: '#6b7280', // Text light color
     fontSize: 16,
     fontWeight: '600',
   },

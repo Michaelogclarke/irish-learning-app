@@ -27,7 +27,7 @@ export default function HomeScreen() {
       
           <TouchableOpacity 
             style={styles.startButton}
-            onPress={() => router.push('/(tabs)/explore' as any)}
+            onPress={() => router.push('/flashcards')}
           >
             <Text style={styles.startButtonText}>Tosaigh ag Foghlaim</Text>
           </TouchableOpacity>
