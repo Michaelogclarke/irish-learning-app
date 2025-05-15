@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Colors from '../constants/Colors';
 
 const ScorePanel = ({ scores }) => {
   // Calculate success rate
@@ -9,17 +10,21 @@ const ScorePanel = ({ scores }) => {
 
   return (
     <View style={styles.scorePanel}>
-      <View style={styles.scoreItem}>
-        <Text style={styles.scoreLabel}>Current Streak</Text>
-        <Text style={styles.scoreValue}>{scores.currentStreak}</Text>
-      </View>
-      <View style={styles.scoreItem}>
-        <Text style={styles.scoreLabel}>Best Streak</Text>
-        <Text style={styles.scoreValue}>{scores.bestStreak}</Text>
-      </View>
-      <View style={styles.scoreItem}>
-        <Text style={styles.scoreLabel}>Success Rate</Text>
-        <Text style={styles.scoreValue}>{successRate}%</Text>
+      <View style={styles.scoreRow}>
+        <View style={styles.streakContainer}>
+          <View style={styles.streakCounter}>
+            <Text style={styles.streakLabel}>Streak</Text>
+            <Text style={styles.streakValue}>{scores.currentStreak}</Text>
+          </View>
+          <View style={styles.bestStreakContainer}>
+            <Text style={styles.bestStreakLabel}>Best Streak</Text>
+            <Text style={styles.bestStreakValue}>{scores.bestStreak}</Text>
+          </View>
+        </View>
+        <View style={styles.successContainer}>
+          <Text style={styles.successLabel}>Success Rate</Text>
+          <Text style={styles.successValue}>{successRate}%</Text>
+        </View>
       </View>
     </View>
   );
@@ -27,11 +32,9 @@ const ScorePanel = ({ scores }) => {
 
 const styles = StyleSheet.create({
   scorePanel: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
@@ -41,19 +44,61 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(167, 243, 208, 0.2)',
   },
-  scoreItem: {
+  scoreRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  scoreLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 4,
+  streakContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flex: 1,
   },
-  scoreValue: {
+  streakCounter: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  streakLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+  },
+  streakValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  bestStreakContainer: {
+    alignItems: 'center',
+  },
+  bestStreakLabel: {
+    fontSize: 12,
+    color: Colors.textLight,
+  },
+  bestStreakValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: Colors.primary,
+  },
+  successContainer: {
+    alignItems: 'center',
+  },
+  successLabel: {
+    fontSize: 12,
+    color: Colors.textLight,
+  },
+  successValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
   },
 });
 

@@ -1,38 +1,39 @@
+import { router } from 'expo-router';
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export default function App() {
+export default function HomeScreen() {
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Cleachtadh Laethúil</Text>
-        </View>
-        
-        <View style={styles.content}>
-          <View style={styles.card}>
-            <Text style={styles.title}>Irish Learning App</Text>
-            <Text style={styles.subtitle}>Daily Irish Language Practice</Text>
-            
-            <View style={styles.instructionsContainer}>
-              <Text style={styles.instructionsTitle}>How it works:</Text>
-              <View style={styles.instructionsList}>
-                <Text style={styles.instructionItem}>• View Irish words and phrases</Text>
-                <Text style={styles.instructionItem}>• Flip cards to see translations</Text>
-                <Text style={styles.instructionItem}>• Practice daily to improve</Text>
-              </View>
-            </View>
-        
-            <TouchableOpacity style={styles.startButton}>
-              <Text style={styles.startButtonText}>Tosaigh ag Foghlaim</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#047857" />
+      
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Cleachtadh Laethúil</Text>
       </View>
-    </SafeAreaProvider>
+      
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Irish Learning App</Text>
+          <Text style={styles.subtitle}>Daily Irish Language Practice</Text>
+          
+          <View style={styles.instructionsContainer}>
+            <Text style={styles.instructionsTitle}>How it works:</Text>
+            <View style={styles.instructionsList}>
+              <Text style={styles.instructionItem}>• View Irish words and phrases</Text>
+              <Text style={styles.instructionItem}>• Flip cards to see translations</Text>
+              <Text style={styles.instructionItem}>• Practice daily to improve</Text>
+            </View>
+          </View>
+      
+          <TouchableOpacity 
+            style={styles.startButton}
+            onPress={() => router.push('/flashcards')}
+          >
+            <Text style={styles.startButtonText}>Tosaigh ag Foghlaim</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#047857', // Green color from original app
-    paddingVertical: 16,
+    paddingVertical: 22,
     paddingHorizontal: 20,
     alignItems: 'center',
   },
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

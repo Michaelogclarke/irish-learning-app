@@ -1,70 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
   Switch,
-  StatusBar
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { getCategories, getTypes } from '../data/flashcards';
 import Colors from '../constants/Colors';
+import { getCategories, getTypes } from '../data/flashcards';
 
-const FilterScreen = ({ navigation, route }) => {
+export default function FilterScreen() {
   const [categories, setCategories] = useState([]);
   const [types, setTypes] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectAllCategories, setSelectAllCategories] = useState(true);
+  const [selectAllTypes, setSelectAllTypes] = useState(true);
 
   useEffect(() => {
     // Load categories and types
-    setCategories(getCategories());
-    setTypes(getTypes());
+    const allCategories = getCategories();
+    const allTypes = getTypes();
+    
+    setCategories(allCategories);
+    setTypes(allTypes);
+    
+    // Initially select all categories and types
+    setSelectedCategories(allCategories);
+    setSelectedTypes(allTypes);
+  }, []);
 
-    // Set selected filters from previous selections if available
-    if (route.params?.selectedCategories) {
-      setSelectedCategories(route.params.selectedCategories);
-    }
-    if (route.params?.selectedTypes) {
-      setSelectedTypes(route.params.selectedTypes);
-    }
-  }, [route.params]);
-
+  // Toggle category selection
   const toggleCategory = (category) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else {
-        return [...prev, category];
+    if (selectedCategories.includes(category)) {
+      const newSelected = selectedCategories.filter(c => c !== category);
+      setSelectedCategories(newSelected);
+      setSelectAllCategories(false);
+    } else {
+      setSelectedCategories([...selectedCategories, category]);
+      if (selectedCategories.length + 1 === categories.length) {
+        setSelectAllCategories(true);
       }
-    });
+    }
   };
 
+  // Toggle type selection
   const toggleType = (type) => {
-    setSelectedTypes(prev => {
-      if (prev.includes(type)) {
-        return prev.filter(t => t !== type);
-      } else {
-        return [...prev, type];
+    if (selectedTypes.includes(type)) {
+      const newSelected = selectedTypes.filter(t => t !== type);
+      setSelectedTypes(newSelected);
+      setSelectAllTypes(false);
+    } else {
+      setSelectedTypes([...selectedTypes, type]);
+      if (selectedTypes.length + 1 === types.length) {
+        setSelectAllTypes(true);
       }
-    });
+    }
   };
 
-  const selectAllCategories = () => {
-    setSelectedCategories([...categories]);
+  // Toggle all categories
+  const toggleAllCategories = () => {
+    if (selectAllCategories) {
+      setSelectedCategories([]);
+    } else {
+      setSelectedCategories([...categories]);
+    }
+    setSelectAllCategories(!selectAllCategories);
   };
 
-  const deselectAllCategories = () => {
-    setSelectedCategories([]);
+  // Toggle all types
+  const toggleAllTypes = () => {
+    if (selectAllTypes) {
+      setSelectedTypes([]);
+    } else {
+      setSelectedTypes([...types]);
+    }
+    setSelectAllTypes(!selectAllTypes);
   };
 
+  // Apply filters and return to flashcard screen
   const applyFilters = () => {
-    navigation.navigate('Flashcard', {
-      selectedCategories,
-      selectedTypes
-    });
+    // In a real app, you would pass these filters back to the flashcard screen
+    // For now, we'll just navigate back
+    router.back();
   };
 
   return (
@@ -79,8 +101,20 @@ const FilterScreen = ({ navigation, route }) => {
         {/* Types Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Content Type</Text>
-          <View style={styles.typesContainer}>
-            {types.map(type => (
+          
+          <View style={styles.sectionHeader}>
+            <Text>Select content types to include</Text>
+            <View style={styles.selectButtons}>
+              <TouchableOpacity onPress={toggleAllTypes}>
+                <Text style={styles.selectButtonText}>
+                  {selectAllTypes ? 'Deselect All' : 'Select All'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          <View style={styles.typesList}>
+            {types.map((type) => (
               <TouchableOpacity
                 key={type}
                 style={[
@@ -89,44 +123,43 @@ const FilterScreen = ({ navigation, route }) => {
                 ]}
                 onPress={() => toggleType(type)}
               >
-                <Text
+                <Text 
                   style={[
                     styles.typeText,
                     selectedTypes.includes(type) && styles.typeTextSelected
                   ]}
                 >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  {type}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
-
+        
         {/* Categories Section */}
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+          
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
+            <Text>Select categories to include</Text>
             <View style={styles.selectButtons}>
-              <TouchableOpacity onPress={selectAllCategories}>
-                <Text style={styles.selectButtonText}>Select All</Text>
-              </TouchableOpacity>
-              <Text style={styles.selectButtonDivider}>|</Text>
-              <TouchableOpacity onPress={deselectAllCategories}>
-                <Text style={styles.selectButtonText}>Deselect All</Text>
+              <TouchableOpacity onPress={toggleAllCategories}>
+                <Text style={styles.selectButtonText}>
+                  {selectAllCategories ? 'Deselect All' : 'Select All'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
-
-          <View style={styles.categoriesContainer}>
-            {categories.map(category => (
+          
+          <View style={styles.categoriesList}>
+            {categories.map((category) => (
               <View key={category} style={styles.categoryItem}>
                 <Text style={styles.categoryText}>{category}</Text>
                 <Switch
-                  trackColor={{ false: '#d1d5db', true: '#10b981' }}
-                  thumbColor={selectedCategories.includes(category) ? '#ffffff' : '#f4f3f4'}
-                  ios_backgroundColor="#d1d5db"
-                  onValueChange={() => toggleCategory(category)}
                   value={selectedCategories.includes(category)}
+                  onValueChange={() => toggleCategory(category)}
+                  trackColor={{ false: '#e5e7eb', true: '#a7f3d0' }}
+                  thumbColor={selectedCategories.includes(category) ? Colors.primary : '#f3f4f6'}
                 />
               </View>
             ))}
@@ -144,14 +177,14 @@ const FilterScreen = ({ navigation, route }) => {
         
         <TouchableOpacity
           style={styles.cancelButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => router.back()}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -210,19 +243,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   selectButtonDivider: {
-    color: '#d1d5db',
+    width: 1,
+    height: 14,
+    backgroundColor: '#e5e7eb',
     marginHorizontal: 8,
   },
-  typesContainer: {
+  typesList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    marginHorizontal: -4,
   },
   typeItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
     backgroundColor: '#f3f4f6',
-    marginRight: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    margin: 4,
     marginBottom: 8,
   },
   typeItemSelected: {
@@ -230,25 +266,26 @@ const styles = StyleSheet.create({
   },
   typeText: {
     color: '#4b5563',
+    fontSize: 14,
     fontWeight: '500',
   },
   typeTextSelected: {
     color: '#ffffff',
   },
-  categoriesContainer: {
+  categoriesList: {
     marginTop: 8,
   },
   categoryItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
   categoryText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: Colors.text,
   },
   footer: {
     padding: 16,
@@ -280,5 +317,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-export default FilterScreen;

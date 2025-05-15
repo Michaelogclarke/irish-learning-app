@@ -6,12 +6,14 @@ import {
   TouchableOpacity,
   Animated,
   SafeAreaView,
-  Dimensions
+  Dimensions,
+  StatusBar
 } from 'react-native';
 import { getFlashcards, updateUserScore } from '../services/firebaseService';
 import { auth } from '../firebaseConfig';
 import Flashcard from '../components/Flashcard';
 import ScorePanel from '../components/ScorePanel';
+import Colors from '../constants/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -188,18 +190,36 @@ const FlashcardScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Score Panel */}
-      <ScorePanel scores={scores} />
-
-      {/* Category Badge */}
-      <View style={styles.categoryContainer}>
-        <View style={styles.categoryBadge}>
-          <Text style={styles.categoryText}>{currentCard.category}</Text>
-        </View>
-        <View style={[styles.typeBadge, currentCard.type === 'sentence' ? styles.sentenceBadge : styles.wordBadge]}>
-          <Text style={styles.typeText}>{currentCard.type}</Text>
-        </View>
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Cleachtadh Laethúil</Text>
+        <Text style={styles.headerSubtitle}>Daily Practice</Text>
       </View>
+
+      {/* Filter Button - Top of screen like in original */}
+      <View style={styles.filterButtonTop}>
+        <TouchableOpacity
+          style={styles.filterButtonSmall}
+          onPress={() => navigation.navigate('Filter')}
+        >
+          <Text style={styles.filterButtonSmallText}>Filter Categories</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.mainContent}>
+        {/* Score Panel */}
+        <ScorePanel scores={scores} />
+
+        {/* Category Badge */}
+        <View style={styles.categoryContainer}>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{currentCard.category}</Text>
+          </View>
+          <View style={[styles.typeBadge, currentCard.type === 'sentence' ? styles.sentenceBadge : styles.wordBadge]}>
+            <Text style={styles.typeText}>{currentCard.type}</Text>
+          </View>
+        </View>
 
       {/* Flashcard */}
       <Flashcard 
@@ -210,7 +230,7 @@ const FlashcardScreen = ({ navigation, route }) => {
 
       {/* Flip Button */}
       <TouchableOpacity style={styles.flipButton} onPress={flipCard}>
-        <Text style={styles.flipButtonText}>Flip Card</Text>
+        <Text style={styles.flipButtonText}>Cas</Text>
       </TouchableOpacity>
 
       {/* Answer Buttons */}
@@ -219,24 +239,24 @@ const FlashcardScreen = ({ navigation, route }) => {
           style={[styles.answerButton, styles.incorrectButton]}
           onPress={() => handleAnswer(false)}
         >
-          <Text style={styles.answerButtonText}>Incorrect</Text>
+          <Text style={styles.answerButtonText}>Mícheart ✗</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
           style={[styles.answerButton, styles.correctButton]}
           onPress={() => handleAnswer(true)}
         >
-          <Text style={styles.answerButtonText}>Correct</Text>
+          <Text style={styles.answerButtonText}>Ceart ✓</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Filter Button */}
-      <TouchableOpacity
-        style={styles.filterButton}
-        onPress={() => navigation.navigate('Filter')}
-      >
-        <Text style={styles.filterButtonText}>Filter Cards</Text>
-      </TouchableOpacity>
+      {/* Progress Indicator - Like in original */}
+      <View style={styles.progressContainer}>
+        <Text style={styles.progressText}>
+          Dul chun cinn: <Text style={styles.progressValue}>{currentIndex + 1}/{filteredCards.length}</Text>
+        </Text>
+      </View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -244,7 +264,26 @@ const FlashcardScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.background,
+  },
+  header: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontStyle: 'italic',
+  },
+  mainContent: {
+    flex: 1,
     padding: 16,
   },
   emptyContainer: {
@@ -258,6 +297,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
+  filterButtonTop: {
+    alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  filterButtonSmall: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  filterButtonSmallText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
   categoryContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -271,7 +326,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   categoryText: {
-    color: '#047857',
+    color: Colors.primary,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -294,7 +349,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   flipButton: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: Colors.secondary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -302,14 +357,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   flipButtonText: {
-    color: '#4b5563',
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
   },
   answerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   answerButton: {
     paddingVertical: 12,
@@ -317,28 +372,50 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     width: '48%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   incorrectButton: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: Colors.danger,
   },
   correctButton: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: Colors.success,
   },
   answerButtonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  filterButton: {
-    backgroundColor: '#047857',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  filterButtonText: {
     color: '#ffffff',
-    fontSize: 16,
+  },
+  progressContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  progressText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  progressValue: {
     fontWeight: '600',
+    color: Colors.text,
   },
 });
 

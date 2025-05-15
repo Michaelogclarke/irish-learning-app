@@ -6,6 +6,7 @@ import {
   Animated,
   Dimensions
 } from 'react-native';
+import Colors from '../constants/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -37,17 +38,17 @@ const Flashcard = ({ card, flipAnimation, cardScale }) => {
 
   return (
     <View style={styles.cardContainer}>
-      <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
+      <Animated.View style={[styles.card, styles.cardFront, styles.cardTexture, frontAnimatedStyle]}>
         <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>Irish</Text>
           <Text style={styles.cardText}>{card.irish}</Text>
+          <Text style={styles.cardCategory}>{card.category}</Text>
         </View>
       </Animated.View>
       
-      <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
+      <Animated.View style={[styles.card, styles.cardBack, styles.cardTexture, backAnimatedStyle]}>
         <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>English</Text>
           <Text style={styles.cardText}>{card.english}</Text>
+          <Text style={styles.cardCategory}>{card.category}</Text>
         </View>
       </Animated.View>
     </View>
@@ -56,7 +57,7 @@ const Flashcard = ({ card, flipAnimation, cardScale }) => {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    height: 250,
+    height: 280,
     width: '100%',
     position: 'relative',
   },
@@ -76,6 +77,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  cardTexture: {
+    // This recreates the card texture from the original web app
+    backgroundColor: '#ffffff',
+    // We can't directly use the linear-gradient background from CSS,
+    // but we can approximate it with a solid color for now
+  },
   cardFront: {
     zIndex: 1,
   },
@@ -88,15 +95,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  cardTitle: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginBottom: 12,
-  },
   cardText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: Colors.primary,
+    textAlign: 'center',
+    marginBottom: 12,
+    // In a production app, we would use the Crimson Pro font here
+  },
+  cardCategory: {
+    fontSize: 14,
+    color: Colors.primaryLight,
     textAlign: 'center',
   },
 });

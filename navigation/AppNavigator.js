@@ -8,6 +8,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
 import FlashcardScreen from '../screens/FlashcardScreen';
 import FilterScreen from '../screens/FilterScreen';
+import TestScreen from '../screens/TestScreen';
 
 // Firebase
 import { getCurrentUser } from '../services/firebaseService';
@@ -53,7 +54,13 @@ const AppStack = () => {
           fontWeight: 'bold',
         },
       }}
+      initialRouteName="Test"
     >
+      <Stack.Screen 
+        name="Test" 
+        component={TestScreen} 
+        options={{ title: 'Cleachtadh Laethúil', headerShown: false }} 
+      />
       <Stack.Screen 
         name="Home" 
         component={HomeScreen} 
@@ -74,18 +81,21 @@ const AppStack = () => {
 };
 
 const AppNavigator = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Temporarily bypass authentication for development
+  // const [user, setUser] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [bypassAuth, setBypassAuth] = useState(true); // Temporary flag to bypass auth
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-      setLoading(false);
-    };
+  // useEffect(() => {
+  //   const checkUser = async () => {
+  //     const currentUser = await getCurrentUser();
+  //     setUser(currentUser);
+  //     setLoading(false);
+  //   };
 
-    checkUser();
-  }, []);
+  //   checkUser();
+  // }, []);
 
   if (loading) {
     return null; // Or a loading screen
@@ -93,7 +103,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer>
-      {user ? <AppStack /> : <AuthStack />}
+      {bypassAuth ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   );
 };
